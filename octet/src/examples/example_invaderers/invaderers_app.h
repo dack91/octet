@@ -436,7 +436,7 @@ namespace octet {
           assert(first_invaderer_sprite + i + j*num_cols <= last_invaderer_sprite);
           sprites[first_invaderer_sprite + i + j*num_cols].init(
             invaderer, ((float)i - num_cols * 0.5f) * 0.5f, 2.50f - ((float)j * 0.5f), 0.5f, 0.5f
-          );
+          );	// changed w, h from 0.25f to 0.5f
         }
       }
 
