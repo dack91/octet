@@ -37,6 +37,7 @@ namespace octet {
     // additional keys with ascii codes
     key_r = 114,
     key_R = 82,
+    key_enter = 13,
 
     // other keys have the following codes:
     key_f1 = 0x80,

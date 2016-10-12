@@ -103,6 +103,12 @@ namespace octet {
       modelToWorld.translate(x, y, 0);
     }
 
+    // rotate the object
+    //TODO:fix rotation eventually stops firing ability
+    //void rotate(float angle) {
+    //  modelToWorld.rotate(angle, 0, 0, 1);
+    //}
+
     // position the object relative to another.
     void set_relative(sprite &rhs, float x, float y) {
       modelToWorld = rhs.modelToWorld;
@@ -268,6 +274,10 @@ namespace octet {
           sprites[ship_sprite].translate(0, +ship_speed);
         }
       }
+      //rotate the ship //TODO:fix rotation eventually stops firing
+      //if (is_key_down(key_shift)) {
+      //  sprites[ship_sprite].rotate(10);
+      //}
 
     }
 
@@ -465,7 +475,7 @@ namespace octet {
       }
 
       // set the border to white for clarity
-      GLuint white = resource_dict::get_texture_handle(GL_RGB, "#07347c");  //default white #ffffff
+      GLuint white = resource_dict::get_texture_handle(GL_RGB, "#042151");  //default white #ffffff
       sprites[first_border_sprite+0].init(white, 0, -3, 6, 0.2f);
       sprites[first_border_sprite+1].init(white, 0,  3, 6, 0.2f);
       sprites[first_border_sprite+2].init(white, -3, 0, 0.2f, 6);
