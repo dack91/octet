@@ -9,6 +9,7 @@ __
 Game Description:
 
 Changes and Additions to example_invaders:
+Movement on y axis
 
 Cited Sources:
 GameWon.gif images used after all enemies are destroyed
