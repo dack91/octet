@@ -251,6 +251,20 @@ namespace octet {
           sprites[ship_sprite].translate(-ship_speed, 0);
         }
       }
+      // up and down arrows
+      else if (is_key_down(key_up)) {
+        sprites[ship_sprite].translate(0, +ship_speed);
+        if (sprites[ship_sprite].collides_with(sprites[first_border_sprite+1])) {
+          sprites[ship_sprite].translate(0, -ship_speed);
+        }
+      }
+      else if (is_key_down(key_down)) {
+        sprites[ship_sprite].translate(0, -ship_speed);
+        if (sprites[ship_sprite].collides_with(sprites[first_border_sprite])) {
+          sprites[ship_sprite].translate(0, +ship_speed);
+        }
+      }
+
     }
 
     // fire button (space)
@@ -437,7 +451,7 @@ namespace octet {
           sprites[first_invaderer_sprite + i + j*num_cols].init(
             invaderer, ((float)i - num_cols * 0.5f) * 0.5f, 2.50f - ((float)j * 0.5f), 0.5f, 0.5f
           );	// changed w, h from 0.25f to 0.5f
-        }
+        }			
       }
 
       // set the border to white for clarity
