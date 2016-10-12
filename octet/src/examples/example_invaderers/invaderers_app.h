@@ -156,6 +156,7 @@ namespace octet {
       // sprite definitions
       ship_sprite = 0,
       game_over_sprite,
+      game_won_sprite,
 
       first_invaderer_sprite,
       last_invaderer_sprite = first_invaderer_sprite + num_invaderers - 1,
@@ -220,7 +221,8 @@ namespace octet {
         invader_velocity *= 4;
       } else if (live_invaderers == 0) {
         game_over = true;
-        sprites[game_over_sprite].translate(-20, 0);
+        sprites[game_won_sprite].translate(-20, 0);
+        // CHANGE TO GAME_WON_SPRITE 
       }
     }
 
@@ -443,6 +445,9 @@ namespace octet {
 
       GLuint GameOver = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/GameOver.gif");
       sprites[game_over_sprite].init(GameOver, 20, 0, 3, 1.5f);
+
+      GLuint GameWon = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/GameWon.gif");
+      sprites[game_won_sprite].init(GameWon, 20, 0, 3, 1.5f);
 
       GLuint invaderer = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/invaderer.gif");
       for (int j = 0; j != num_rows; ++j) {
