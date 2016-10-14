@@ -156,7 +156,7 @@ namespace octet {
       num_cols = 10,
       num_missiles = 2,
       num_bombs = 2,
-      num_borders = 4,
+      num_borders = 5,
       num_invaderers = num_rows * num_cols,
 
       // sprite definitions
@@ -249,6 +249,7 @@ namespace octet {
     // use the keyboard to move the ship
     void move_ship() {
       const float ship_speed = 0.05f;
+
       // left and right arrows
       if (is_key_down(key_left)) {
         sprites[ship_sprite].translate(-ship_speed, 0);
@@ -264,7 +265,7 @@ namespace octet {
       // up and down arrows
       else if (is_key_down(key_up)) {
         sprites[ship_sprite].translate(0, +ship_speed);
-        if (sprites[ship_sprite].collides_with(sprites[first_border_sprite+1])) {
+        if (sprites[ship_sprite].collides_with(sprites[first_border_sprite+4])) {
           sprites[ship_sprite].translate(0, -ship_speed);
         }
       }
@@ -302,6 +303,7 @@ namespace octet {
     }
 
     // pick and invader and fire a bomb
+    //TODO: intelligently pick invader to fire
     void fire_bombs() {
       if (bombs_disabled) {
         --bombs_disabled;
@@ -480,6 +482,9 @@ namespace octet {
       sprites[first_border_sprite+1].init(white, 0,  3, 6, 0.2f);
       sprites[first_border_sprite+2].init(white, -3, 0, 0.2f, 6);
       sprites[first_border_sprite+3].init(white, 3,  0, 0.2f, 6);
+      //TODO: add invisible border sprite to stop ship going too far up screen
+      sprites[first_border_sprite + 4].init(NULL, 0, -1, 6, 0.2f);
+
 
       // use the missile texture
       GLuint missile = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/missile.gif");
@@ -516,7 +521,7 @@ namespace octet {
     // called every frame to move things
     void simulate() {
       if (game_over) {
-        if (is_key_down(key_tab)) {
+        if (is_key_down(key_R)) {
           app_init();
         }
         return;
@@ -565,7 +570,7 @@ namespace octet {
       }
 
       char score_text[32];
-      sprintf(score_text, "score: %d   lives: %d\n", score, num_lives);
+      sprintf(score_text, "score: %d  lives: %d\n", score, num_lives);
       draw_text(texture_shader_, -1.75f, 2, 1.0f/256, score_text);
 
       // move the listener with the camera
