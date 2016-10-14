@@ -35,7 +35,6 @@ namespace octet {
     key_space = 32,
 
     // additional keys with ascii codes
-    key_r = 114,
     key_R = 82,
     key_enter = 13,
 
