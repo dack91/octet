@@ -178,8 +178,8 @@ namespace octet {
     // shader to draw a textured triangle
     texture_shader texture_shader_;
 
-    // level variables
-    const static int num_level_walls = 3;
+    // level variables TEST for reading csv file
+    static int num_level_walls;
 
     enum {
       num_sound_sources = 8,
@@ -189,13 +189,14 @@ namespace octet {
       num_bombs = 2,
       num_borders = 5,
       num_invaderers = num_rows * num_cols,
-      num_walls = num_level_walls,
+      num_walls = 4,
 
       // sprite definitions
       ship_sprite = 0,
       game_over_sprite,
       game_won_sprite,
       game_restart_sprite,
+      game_pause_sprite,
       background_sprite,
 
       first_invaderer_sprite,
@@ -549,6 +550,9 @@ namespace octet {
       GLuint GameRestart = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/GameRestart.gif");
       sprites[game_restart_sprite].init(GameRestart, 20, -1.0f, 1.5f, 0.75f);
 
+      GLuint GamePause = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/GamePause.gif");
+      sprites[game_pause_sprite].init(GamePause, 20, 0, 1.5f, 0.75f);
+
       GLuint invaderer = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/enemy.gif");
       for (int j = 0; j != num_rows; ++j) {
         for (int i = 0; i != num_cols; ++i) {
@@ -620,12 +624,14 @@ namespace octet {
       if (!game_paused) {
         if (is_key_going_down(kev_P)) {
           game_paused = true;
+          sprites[game_pause_sprite].translate(-20, 0);
           return;
         }
       }
       else {
         if (is_key_going_down(kev_P)) {
           game_paused = false;
+          sprites[game_pause_sprite].translate(20, 0);
           goto move_ship;
         }
         return;
