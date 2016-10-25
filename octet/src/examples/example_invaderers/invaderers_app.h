@@ -309,6 +309,13 @@ namespace octet {
       }
     }
 
+    // called when a missile and bomb collide
+    void on_projectile_collide() {
+      ALuint source = get_sound_source();
+      alSourcei(source, AL_BUFFER, bang);
+      alSourcePlay(source);
+    }
+
     // use the keyboard to move the ship
     void move_ship() {
       const float ship_speed = 0.05f;
@@ -423,6 +430,18 @@ namespace octet {
               missile.is_enabled() = false;
               missile.translate(20, 0);
               on_hit_wall(wall);
+
+              goto next_missile;
+            }
+          }
+          for (int i = 0; i != num_bombs; ++i) {
+            sprite &bomb = sprites[first_bomb_sprite + i];
+            if (bomb.is_enabled() && missile.collides_with(bomb)) {
+              bomb.is_enabled() = false;
+              bomb.translate(20, 0);
+              missile.is_enabled() = false;
+              missile.translate(20, 0);
+              on_projectile_collide();
 
               goto next_missile;
             }
