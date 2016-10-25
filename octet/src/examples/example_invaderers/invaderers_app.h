@@ -33,6 +33,9 @@ namespace octet {
 
     // true if this sprite is enabled.
     bool enabled;
+
+    // number of lives, used for wall which takes multiple hits
+    int lives;
   public:
     sprite() {
       texture = 0;
@@ -46,6 +49,31 @@ namespace octet {
       halfHeight = h * 0.5f;
       texture = _texture;
       enabled = true;
+      lives = 1;
+    }
+
+    // Second constructor used for walls and other sprites with multiple lives
+    void init(int _texture, float x, float y, float w, float h, int life) {
+      modelToWorld.loadIdentity();
+      modelToWorld.translate(x, y, 0);
+      halfWidth = w * 0.5f;
+      halfHeight = h * 0.5f;
+      texture = _texture;
+      enabled = true;
+      lives = life;
+    }
+
+    // getter and setter for sprite lives
+    int get_lives_left() {
+      return lives;
+    }
+    void life_lost() {
+      --lives;
+    }
+
+    // update sprite texture with new image
+    void change_texture(GLuint _texture) {
+      texture = _texture;
     }
 
     void render(texture_shader &shader, mat4t &cameraToWorld) {
@@ -158,12 +186,14 @@ namespace octet {
       num_bombs = 2,
       num_borders = 5,
       num_invaderers = num_rows * num_cols,
+      num_walls = 4,
 
       // sprite definitions
       ship_sprite = 0,
       game_over_sprite,
       game_won_sprite,
       game_restart_sprite,
+      background_sprite,
 
       first_invaderer_sprite,
       last_invaderer_sprite = first_invaderer_sprite + num_invaderers - 1,
@@ -176,6 +206,9 @@ namespace octet {
 
       first_border_sprite,
       last_border_sprite = first_border_sprite + num_borders - 1,
+
+      first_wall_sprite,
+      last_wall_sprite = first_wall_sprite + num_walls - 1,
 
       num_sprites,
 
@@ -243,6 +276,30 @@ namespace octet {
         game_over = true;
         sprites[game_over_sprite].translate(-20, 0);
         sprites[game_restart_sprite].translate(-20, 0);
+      }
+    }
+
+    // called when a wall is hit
+    void on_hit_wall(sprite &wall) {
+      ALuint source = get_sound_source();
+      alSourcei(source, AL_BUFFER, bang);
+      alSourcePlay(source);
+
+      int currLives = wall.get_lives_left();
+      GLuint newTexture;
+
+      // Damage wall
+      if (currLives > 1) {
+        wall.life_lost();
+        std::string wallTextureFile = "assets/invaderers/wall" +  std::to_string(--currLives) + ".gif";
+        // example std::string from stackOverflow http://stackoverflow.com/questions/13108973/creating-file-names-automatically-c
+        newTexture = resource_dict::get_texture_handle(GL_RGBA, wallTextureFile.c_str());
+        wall.change_texture(newTexture);
+      }
+      // Destroy wall
+      else {
+        wall.is_enabled() = false;
+        wall.translate(20, 0);
       }
     }
 
@@ -354,6 +411,16 @@ namespace octet {
             missile.is_enabled() = false;
             missile.translate(20, 0);
           }
+          for (int i = 0; i != num_walls; ++i) {
+            sprite &wall = sprites[first_wall_sprite + i];
+            if (wall.is_enabled() && missile.collides_with(wall)) {
+              missile.is_enabled() = false;
+              missile.translate(20, 0);
+              on_hit_wall(wall);
+
+              goto next_missile;
+            }
+          }
         }
       next_missile:;
       }
@@ -371,11 +438,22 @@ namespace octet {
             bomb.translate(20, 0);
             bombs_disabled = 50;
             on_hit_ship();
+
             goto next_bomb;
           }
           if (bomb.collides_with(sprites[first_border_sprite+0])) {
             bomb.is_enabled() = false;
             bomb.translate(20, 0);
+          }
+          for (int i = 0; i != num_walls; ++i) {
+            sprite &wall = sprites[first_wall_sprite + i];
+            if (wall.is_enabled() && bomb.collides_with(wall)) {
+              bomb.is_enabled() = false;
+              bomb.translate(20, 0);
+              on_hit_wall(wall);
+
+              goto next_bomb;
+            }
           }
         }
       next_bomb:;
@@ -454,26 +532,32 @@ namespace octet {
 
       font_texture = resource_dict::get_texture_handle(GL_RGBA, "assets/big_0.gif");
 
-      GLuint ship = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/ship.gif");
+      GLuint ship = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/player.gif");
       sprites[ship_sprite].init(ship, 0, -2.75f, 0.25f, 0.25f);
 
       GLuint GameOver = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/GameOver.gif");
       sprites[game_over_sprite].init(GameOver, 20, 0, 3, 1.5f);
 
       GLuint GameWon = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/GameWon.gif");
-      sprites[game_won_sprite].init(GameWon, 20, 0, 3, 2.25f);
+      sprites[game_won_sprite].init(GameWon, 20, 0, 3, 1.5f);
 
       GLuint GameRestart = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/GameRestart.gif");
-      sprites[game_restart_sprite].init(GameRestart, 20, -1.5f, 3, 0.38f);
+      sprites[game_restart_sprite].init(GameRestart, 20, -1.0f, 1.5f, 0.75f);
 
-      GLuint invaderer = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/invaderer.gif");
+      GLuint invaderer = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/enemy.gif");
       for (int j = 0; j != num_rows; ++j) {
         for (int i = 0; i != num_cols; ++i) {
           assert(first_invaderer_sprite + i + j*num_cols <= last_invaderer_sprite);
           sprites[first_invaderer_sprite + i + j*num_cols].init(
-            invaderer, ((float)i - num_cols * 0.5f) * 0.5f, 2.50f - ((float)j * 0.5f), 0.5f, 0.5f
-          );	// changed w, h from 0.25f to 0.5f
+            invaderer, ((float)i - num_cols * 0.5f) * 0.5f, 2.50f - ((float)j * 0.5f), 0.25f, 0.25f
+          );	
         }			
+      }
+
+      // TODO: add walls where they were read in from csv file
+      GLuint wall = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/wall3.gif");
+      for (int i = 0; i != num_walls; ++i) {
+        sprites[first_wall_sprite + i].init(wall, (-2.0f + i * 1.5f), -1.0f, 0.25f, 0.25f, 3);
       }
 
       // set the border to white for clarity
@@ -482,7 +566,7 @@ namespace octet {
       sprites[first_border_sprite+1].init(white, 0,  3, 6, 0.2f);
       sprites[first_border_sprite+2].init(white, -3, 0, 0.2f, 6);
       sprites[first_border_sprite+3].init(white, 3,  0, 0.2f, 6);
-      //TODO: add invisible border sprite to stop ship going too far up screen
+      //Invisible border sprite to stop ship going too far up screen
       sprites[first_border_sprite + 4].init(NULL, 0, -1, 6, 0.2f);
 
 
@@ -554,8 +638,15 @@ namespace octet {
       glViewport(x, y, w, h);
 
       // clear the background to black
-      glClearColor(0.08f, 0.37f, 0.83f, 1);  //default black 0,0,0,1
+      glClearColor(0.55f, 0.27f, 0.07f, 1); // teal (0.08f, 0.37f, 0.83f, 1) //default black 0,0,0,1
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+      //TODO: load background texture instead of clearColor
+      //GLuint background = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/background.gif");
+      ////sprites[background_sprite].init(background, 0, 0, 5.8f, 5.8f);
+      //glBindTexture(GL_TEXTURE_2D, background);
+      //glLoadIdentity();
+      //glEnable(GL_TEXTURE_2D);
 
       // don't allow Z buffer depth testing (closer objects are always drawn in front of far ones)
       glDisable(GL_DEPTH_TEST);
