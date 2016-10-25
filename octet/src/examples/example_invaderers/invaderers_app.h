@@ -178,6 +178,9 @@ namespace octet {
     // shader to draw a textured triangle
     texture_shader texture_shader_;
 
+    // level variables
+    const static int num_level_walls = 3;
+
     enum {
       num_sound_sources = 8,
       num_rows = 5,
@@ -186,7 +189,7 @@ namespace octet {
       num_bombs = 2,
       num_borders = 5,
       num_invaderers = num_rows * num_cols,
-      num_walls = 4,
+      num_walls = num_level_walls,
 
       // sprite definitions
       ship_sprite = 0,
@@ -223,6 +226,7 @@ namespace octet {
 
     // game state
     bool game_over;
+    bool game_paused;
     int score;
 
     // speed of enemy
@@ -599,6 +603,7 @@ namespace octet {
       invader_velocity = 0.01f;
       live_invaderers = num_invaderers;
       game_over = false;
+      game_paused = false;
       score = 0;
     }
 
@@ -611,6 +616,22 @@ namespace octet {
         return;
       }
 
+      // Pause and unpause game using 'P'
+      if (!game_paused) {
+        if (is_key_going_down(kev_P)) {
+          game_paused = true;
+          return;
+        }
+      }
+      else {
+        if (is_key_going_down(kev_P)) {
+          game_paused = false;
+          goto move_ship;
+        }
+        return;
+      }
+
+      move_ship:
       move_ship();
 
       fire_missiles();
