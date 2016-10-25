@@ -52,7 +52,7 @@ namespace octet {
       lives = 1;
     }
 
-    // Second constructor used for walls and other sprites with multiple lives
+    // Second constructor used for player, walls, and other sprites with multiple lives
     void init(int _texture, float x, float y, float w, float h, int life) {
       modelToWorld.loadIdentity();
       modelToWorld.translate(x, y, 0);
@@ -220,7 +220,6 @@ namespace octet {
 
     // accounting for bad guys
     int live_invaderers;
-    int num_lives;
 
     // game state
     bool game_over;
@@ -267,12 +266,14 @@ namespace octet {
     }
 
     // called when we are hit
-    void on_hit_ship() {
+    void on_hit_ship(sprite &player) {
       ALuint source = get_sound_source();
       alSourcei(source, AL_BUFFER, bang);
       alSourcePlay(source);
 
-      if (--num_lives == 0) {
+      player.life_lost();
+      int playerLives = player.get_lives_left();
+      if (playerLives == 0) {
         game_over = true;
         sprites[game_over_sprite].translate(-20, 0);
         sprites[game_restart_sprite].translate(-20, 0);
@@ -437,7 +438,7 @@ namespace octet {
             bomb.is_enabled() = false;
             bomb.translate(20, 0);
             bombs_disabled = 50;
-            on_hit_ship();
+            on_hit_ship(sprites[ship_sprite]);
 
             goto next_bomb;
           }
@@ -533,7 +534,7 @@ namespace octet {
       font_texture = resource_dict::get_texture_handle(GL_RGBA, "assets/big_0.gif");
 
       GLuint ship = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/player.gif");
-      sprites[ship_sprite].init(ship, 0, -2.75f, 0.25f, 0.25f);
+      sprites[ship_sprite].init(ship, 0, -2.75f, 0.25f, 0.25f, 3);
 
       GLuint GameOver = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/GameOver.gif");
       sprites[game_over_sprite].init(GameOver, 20, 0, 3, 1.5f);
@@ -597,7 +598,6 @@ namespace octet {
       bombs_disabled = 50;
       invader_velocity = 0.01f;
       live_invaderers = num_invaderers;
-      num_lives = 3;
       game_over = false;
       score = 0;
     }
@@ -661,7 +661,7 @@ namespace octet {
       }
 
       char score_text[32];
-      sprintf(score_text, "score: %d  lives: %d\n", score, num_lives);
+      sprintf(score_text, "score: %d  lives: %d\n", score, sprites[ship_sprite].get_lives_left());
       draw_text(texture_shader_, -1.75f, 2, 1.0f/256, score_text);
 
       // move the listener with the camera
