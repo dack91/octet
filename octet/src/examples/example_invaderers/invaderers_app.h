@@ -17,6 +17,7 @@
 //   Audio
 //
 
+
 namespace octet {
   class sprite {
     // where is our sprite (overkill for a 2D game!)
@@ -189,7 +190,7 @@ namespace octet {
       num_bombs = 2,
       num_borders = 5,
       num_invaderers = num_rows * num_cols,
-      num_walls = 10, // max walls per level
+      num_walls = 15, // max walls per level
 
       // sprite definitions
       ship_sprite = 0,
@@ -493,12 +494,53 @@ namespace octet {
 
     // read csv from given file name
     // set values for number and position of sprites
-    void read_csv(const char* file, std::vector<int> &invaderPos, std::vector<int> &wallPos, std::vector<int> &playerPos) {
-      //read first line of csv
-      nInvaders = 5;  // first value in csv
-      nWalls = 3; // second value in csv
+    int read_csv(const char* file, std::vector<int> &invaderPos, std::vector<int> &wallPos, std::vector<int> &playerPos) {
+      //EXAMPLE READ CSV FROM ANDY THOMASON GITHUB https://github.com/andy-thomason/read_a_csv_file/blob/master/main.cpp
+      std::ifstream level(file);
 
-      // arrays of specific sprites with locations
+      // Return error if file can't be read/doesn't exist
+      if (level.bad()) return 1; 
+
+      // Read file 
+      int posY = 0;
+      while (!level.eof()) {
+        // store line
+        char buffer[100];
+        level.getline(buffer, sizeof(buffer));
+
+        char *b = buffer;
+        for (int posX = 0; posX < sizeof(buffer); ++posX) {
+          if (*b != 0 && *b != ',') {
+
+              // Invader
+              if (*b == 'I') {
+                invaderPos.push_back(posX);
+                invaderPos.push_back(posY);
+              }
+              // Wall
+              else if (*b == 'W') {
+                wallPos.push_back(posX);
+                wallPos.push_back(posY);
+              }
+              // Player
+              else if (*b == 'P') {
+                playerPos.push_back(posX);
+                playerPos.push_back(posY);
+              }
+              
+          }
+          ++b;  //next collumn 
+        }
+        ++posY; //next line     
+      }
+      
+      //read first line of csv
+      nInvaders = invaderPos.size() / 2;  
+      nWalls = wallPos.size() / 2; 
+      //printf("%d", nInvaders);
+      return 0; // return no errors
+
+      // read through file and fill arrays of specific sprites with x,y grid locations
       /*
       for each line of csv (i = x, j = y)
         if char == I
@@ -514,16 +556,18 @@ namespace octet {
       */
 
       // TMP values for testing invader position
-      invaderPos.push_back(12);
-      invaderPos.push_back(0);
-      invaderPos.push_back(13);
-      invaderPos.push_back(0);
-      invaderPos.push_back(14);
-      invaderPos.push_back(0);
-      invaderPos.push_back(12);
-      invaderPos.push_back(1);
-      invaderPos.push_back(2);
-      invaderPos.push_back(5);
+      //nInvaders = 5;
+      //nWalls = 4;
+      //invaderPos.push_back(12);
+      //invaderPos.push_back(0);
+      //invaderPos.push_back(13);
+      //invaderPos.push_back(0);
+      //invaderPos.push_back(14);
+      //invaderPos.push_back(0);
+      //invaderPos.push_back(12);
+      //invaderPos.push_back(1);
+      //invaderPos.push_back(2);
+      //invaderPos.push_back(5);
     }
 
     // move the array of enemies
@@ -596,18 +640,19 @@ namespace octet {
       cameraToWorld.loadIdentity();
       cameraToWorld.translate(0, 0, 3);
 
-      // declare vector for csv file
+      // declare vectors for csv file
       std::vector<int> invaderPos;
       std::vector<int> wallPos;
       std::vector<int> playerPos;
 
       // read in csv file to determine how number on location for each sprite type
-      read_csv("assets/levels/Invaders/Level1.csv", invaderPos, wallPos, playerPos);
+      read_csv("levels/Level1.csv", invaderPos, wallPos, playerPos);
 
       font_texture = resource_dict::get_texture_handle(GL_RGBA, "assets/big_0.gif");
 
       GLuint ship = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/player.gif");
-      sprites[ship_sprite].init(ship, 0, -2.75f, 0.25f, 0.25f, 3);
+      sprites[ship_sprite].init(ship, ((-2.75f + (float)playerPos.at(0) * 0.25f)),
+        (2.75f - ((float)playerPos.at(1) * 0.25f)), 0.25f, 0.25f, 3);
 
       GLuint GameOver = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/GameOver.gif");
       sprites[game_over_sprite].init(GameOver, 20, 0, 3, 1.5f);
@@ -643,12 +688,13 @@ namespace octet {
 
       // TODO: add walls where they were read in from csv file
       GLuint wall = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/wall3.gif");
+      j = 0;
       for (int i = 0; i != nWalls; ++i) {
-        sprites[first_wall_sprite + i].init(wall, (-2.75f + i * 1.5f), -1.0f, 0.25f, 0.25f, 3);
+        assert(first_wall_sprite + nWalls <= last_wall_sprite);
+        sprites[first_wall_sprite + i].init(wall, ((-2.75f + (float)wallPos.at(j) * 0.25f)),
+          (2.75f - ((float)wallPos.at(j + 1) * 0.25f)), 0.25f, 0.25f, 3);
+        j += 2;
       }
-      //for (int i = 0; i != num_walls/2; ++i) {
-      //  sprites[first_wall_sprite + i +2].init(wall, (-2.77f + i * 1.5f), -0.75f, 0.25f, 0.25f, 3);
-      //}
 
       // set the border to white for clarity
       GLuint white = resource_dict::get_texture_handle(GL_RGB, "#042151");  //default white #ffffff
