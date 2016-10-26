@@ -183,7 +183,7 @@ namespace octet {
 
     enum {
       num_sound_sources = 8,
-      num_rows = 14,  // max grid spaces vertically in enemy portion of game
+      num_rows = 15,  // max grid spaces vertically in enemy portion of game
       num_cols = 22,  // max grid speces horizontally in game
       num_missiles = 2,
       num_bombs = 2,
@@ -494,13 +494,34 @@ namespace octet {
       }
     }
 
-    void read_csv(const char* file) {
+    int* read_csv(const char* file) {
       // read csv from given file name
       // set values for number and position of sprites
-      nRows = 5;
-      nCols = 10;
-      nInvaders = 50;
-      nWalls = 3;
+      nInvaders = 5;  // first value in csv
+      nWalls = 3; // second value in csv
+
+      //tmp values
+      //nRows = 15;
+      //nCols = 22;
+
+      // arrays of specific sprites with locations
+      const int invadersSize = 5 * 2;
+      int* p;
+      int invaderPos[10];  // x, y position of each invader
+      p = invaderPos;
+      invaderPos[0] = 12;
+      invaderPos[1] = 0;
+      invaderPos[2] = 13;
+      invaderPos[3] = 0;
+      invaderPos[4] = 14;
+      invaderPos[5] = 0;
+      invaderPos[6] = 12;
+      invaderPos[7] = 1;
+      invaderPos[8] = 2;
+      invaderPos[9] = 5;
+
+      return p;
+      //int wallPos[3 * 2]; // x,y position of each wall
     }
 
     // move the array of enemies
@@ -574,7 +595,20 @@ namespace octet {
       cameraToWorld.translate(0, 0, 3);
 
       // read in csv file to determine how number on location for each sprite type
+      //int *invaderPos = read_csv("assets/levels/Invaders/Level1.csv");
       read_csv("assets/levels/Invaders/Level1.csv");
+      int invaderPos[10];  // x, y position of each invader
+      invaderPos[0] = 12;
+      invaderPos[1] = 0;
+      invaderPos[2] = 13;
+      invaderPos[3] = 0;
+      invaderPos[4] = 14;
+      invaderPos[5] = 0;
+      invaderPos[6] = 12;
+      invaderPos[7] = 1;
+      invaderPos[8] = 2;
+      invaderPos[9] = 5;
+
 
       font_texture = resource_dict::get_texture_handle(GL_RGBA, "assets/big_0.gif");
 
@@ -594,13 +628,23 @@ namespace octet {
       sprites[game_pause_sprite].init(GamePause, 20, 0, 1.5f, 0.75f);
 
       GLuint invaderer = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/enemy.gif");
-      for (int j = 0; j != nRows; ++j) {
-        for (int i = 0; i != nCols; ++i) {
-          assert(first_invaderer_sprite + i + j*num_cols <= last_invaderer_sprite);
-          sprites[first_invaderer_sprite + i + j*num_cols].init(
-            invaderer, ((float)i - num_cols * 0.5f) * 0.25f, 2.50f - ((float)j * 0.25f), 0.25f, 0.25f
-          );	
-        }			
+      // original loop for creating enemies
+      //for (int j = 0; j != nRows; ++j) {
+      //  for (int i = 0; i != nCols; ++i) {
+      //    assert(first_invaderer_sprite + i + j*num_cols <= last_invaderer_sprite);
+      //    sprites[first_invaderer_sprite + i + j*num_cols].init(
+      //      invaderer, ((float)i - num_cols * 0.5f) * 0.25f, 2.75f - ((float)j * 0.25f), 0.25f, 0.25f
+      //    );	
+      //  }			
+      //}
+
+      // spawn and place enemies based off array of positions from csv
+      int j = 0;  //index for x,y position
+      for (int i = 0; i < nInvaders; ++i) {
+        assert(first_invaderer_sprite + nInvaders <= last_invaderer_sprite);
+        sprites[first_invaderer_sprite + i].init(invaderer, ((-2.75f + (float)invaderPos[j] * 0.25f)),
+          (2.75f - ((float)invaderPos[j+1] * 0.25f)), 0.25f, 0.25f);  // convert grid x,y pos to world x,y pos
+        j += 2; // increment x,y pos index
       }
 
       // TODO: add walls where they were read in from csv file
