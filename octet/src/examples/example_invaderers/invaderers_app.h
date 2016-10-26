@@ -183,8 +183,8 @@ namespace octet {
 
     enum {
       num_sound_sources = 8,
-      num_rows = 5,
-      num_cols = 10,
+      num_rows = 14,  // max grid spaces vertically in enemy portion of game
+      num_cols = 22,  // max grid speces horizontally in game
       num_missiles = 2,
       num_bombs = 2,
       num_borders = 5,
@@ -232,6 +232,8 @@ namespace octet {
 
     // speed of enemy
     float invader_velocity;
+    // direction of enemy
+    float invader_direction;
 
     // sounds
     ALuint whoosh;
@@ -555,6 +557,8 @@ namespace octet {
       cameraToWorld.loadIdentity();
       cameraToWorld.translate(0, 0, 3);
 
+      // read in csv file to determine how number on location for each sprite type
+
       font_texture = resource_dict::get_texture_handle(GL_RGBA, "assets/big_0.gif");
 
       GLuint ship = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/player.gif");
@@ -577,7 +581,7 @@ namespace octet {
         for (int i = 0; i != num_cols; ++i) {
           assert(first_invaderer_sprite + i + j*num_cols <= last_invaderer_sprite);
           sprites[first_invaderer_sprite + i + j*num_cols].init(
-            invaderer, ((float)i - num_cols * 0.5f) * 0.5f, 2.50f - ((float)j * 0.5f), 0.25f, 0.25f
+            invaderer, ((float)i - num_cols * 0.5f) * 0.25f, 2.50f - ((float)j * 0.25f), 0.25f, 0.25f
           );	
         }			
       }
@@ -585,17 +589,20 @@ namespace octet {
       // TODO: add walls where they were read in from csv file
       GLuint wall = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/wall3.gif");
       for (int i = 0; i != num_walls; ++i) {
-        sprites[first_wall_sprite + i].init(wall, (-2.0f + i * 1.5f), -1.0f, 0.25f, 0.25f, 3);
+        sprites[first_wall_sprite + i].init(wall, (-2.75f + i * 1.5f), -1.0f, 0.25f, 0.25f, 3);
       }
+      //for (int i = 0; i != num_walls/2; ++i) {
+      //  sprites[first_wall_sprite + i +2].init(wall, (-2.77f + i * 1.5f), -0.75f, 0.25f, 0.25f, 3);
+      //}
 
       // set the border to white for clarity
       GLuint white = resource_dict::get_texture_handle(GL_RGB, "#042151");  //default white #ffffff
-      sprites[first_border_sprite+0].init(white, 0, -3, 6, 0.2f);
-      sprites[first_border_sprite+1].init(white, 0,  3, 6, 0.2f);
-      sprites[first_border_sprite+2].init(white, -3, 0, 0.2f, 6);
-      sprites[first_border_sprite+3].init(white, 3,  0, 0.2f, 6);
+      sprites[first_border_sprite+0].init(white, 0, -3, 6, 0.25f);  // bottom
+      sprites[first_border_sprite+1].init(white, 0,  3, 6, 0.25f);  // top
+      sprites[first_border_sprite+2].init(white, -3, 0, 0.25f, 6);  // left
+      sprites[first_border_sprite+3].init(white, 3,  0, 0.25f, 6);  // right
       //Invisible border sprite to stop ship going too far up screen
-      sprites[first_border_sprite + 4].init(NULL, 0, -1, 6, 0.2f);
+      sprites[first_border_sprite + 4].init(NULL, 0, -1, 6, 0.25f); // divider
 
 
       // use the missile texture
@@ -624,6 +631,7 @@ namespace octet {
       missiles_disabled = 0;
       bombs_disabled = 50;
       invader_velocity = 0.01f;
+      invader_direction = -0.25f;
       live_invaderers = num_invaderers;
       game_over = false;
       game_paused = false;
@@ -669,10 +677,15 @@ namespace octet {
 
       move_invaders(invader_velocity, 0);
 
-      sprite &border = sprites[first_border_sprite+(invader_velocity < 0 ? 2 : 3)];
-      if (invaders_collide(border)) {
+      sprite &borderSide = sprites[first_border_sprite+(invader_velocity < 0 ? 2 : 3)]; // left and right
+      sprite &borderTop = sprites[first_border_sprite + (invader_direction < 0 ? 4 : 1)]; // divider and top
+      if (invaders_collide(borderSide)) {
         invader_velocity = -invader_velocity;
-        move_invaders(invader_velocity, -0.1f);
+        move_invaders(invader_velocity, invader_direction);  // changed from -0.1f to -0.25 to keep sprites in .25x.25 grid space
+        if (invaders_collide(borderTop)) {
+          invader_direction = -invader_direction;
+          move_invaders(invader_velocity, invader_direction); 
+        }
       }
     }
 
