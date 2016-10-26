@@ -235,10 +235,7 @@ namespace octet {
     // direction of enemy
     float invader_direction;
 
-
     // level variables set by csv file
-    int nRows;
-    int nCols;
     int nWalls;
     int nInvaders;
 
@@ -494,34 +491,39 @@ namespace octet {
       }
     }
 
-    int* read_csv(const char* file) {
-      // read csv from given file name
-      // set values for number and position of sprites
+    // read csv from given file name
+    // set values for number and position of sprites
+    void read_csv(const char* file, std::vector<int> &invaderPos, std::vector<int> &wallPos, std::vector<int> &playerPos) {
+      //read first line of csv
       nInvaders = 5;  // first value in csv
       nWalls = 3; // second value in csv
 
-      //tmp values
-      //nRows = 15;
-      //nCols = 22;
-
       // arrays of specific sprites with locations
-      const int invadersSize = 5 * 2;
-      int* p;
-      int invaderPos[10];  // x, y position of each invader
-      p = invaderPos;
-      invaderPos[0] = 12;
-      invaderPos[1] = 0;
-      invaderPos[2] = 13;
-      invaderPos[3] = 0;
-      invaderPos[4] = 14;
-      invaderPos[5] = 0;
-      invaderPos[6] = 12;
-      invaderPos[7] = 1;
-      invaderPos[8] = 2;
-      invaderPos[9] = 5;
+      /*
+      for each line of csv (i = x, j = y)
+        if char == I
+          invaderPos.push_back(i)
+          invaderPos.push_back(j)
+        else if char == W
+          wallPos.push_back(i)
+          wallPos.push_back(j)
+        else if char == P
+          playerPos.push_back(i)
+          playerPos.push_back(j)
+        // new line, increment j, reset i = 0
+      */
 
-      return p;
-      //int wallPos[3 * 2]; // x,y position of each wall
+      // TMP values for testing invader position
+      invaderPos.push_back(12);
+      invaderPos.push_back(0);
+      invaderPos.push_back(13);
+      invaderPos.push_back(0);
+      invaderPos.push_back(14);
+      invaderPos.push_back(0);
+      invaderPos.push_back(12);
+      invaderPos.push_back(1);
+      invaderPos.push_back(2);
+      invaderPos.push_back(5);
     }
 
     // move the array of enemies
@@ -594,21 +596,13 @@ namespace octet {
       cameraToWorld.loadIdentity();
       cameraToWorld.translate(0, 0, 3);
 
-      // read in csv file to determine how number on location for each sprite type
-      //int *invaderPos = read_csv("assets/levels/Invaders/Level1.csv");
-      read_csv("assets/levels/Invaders/Level1.csv");
-      int invaderPos[10];  // x, y position of each invader
-      invaderPos[0] = 12;
-      invaderPos[1] = 0;
-      invaderPos[2] = 13;
-      invaderPos[3] = 0;
-      invaderPos[4] = 14;
-      invaderPos[5] = 0;
-      invaderPos[6] = 12;
-      invaderPos[7] = 1;
-      invaderPos[8] = 2;
-      invaderPos[9] = 5;
+      // declare vector for csv file
+      std::vector<int> invaderPos;
+      std::vector<int> wallPos;
+      std::vector<int> playerPos;
 
+      // read in csv file to determine how number on location for each sprite type
+      read_csv("assets/levels/Invaders/Level1.csv", invaderPos, wallPos, playerPos);
 
       font_texture = resource_dict::get_texture_handle(GL_RGBA, "assets/big_0.gif");
 
@@ -642,8 +636,8 @@ namespace octet {
       int j = 0;  //index for x,y position
       for (int i = 0; i < nInvaders; ++i) {
         assert(first_invaderer_sprite + nInvaders <= last_invaderer_sprite);
-        sprites[first_invaderer_sprite + i].init(invaderer, ((-2.75f + (float)invaderPos[j] * 0.25f)),
-          (2.75f - ((float)invaderPos[j+1] * 0.25f)), 0.25f, 0.25f);  // convert grid x,y pos to world x,y pos
+        sprites[first_invaderer_sprite + i].init(invaderer, ((-2.75f + (float)invaderPos.at(j) * 0.25f)),
+          (2.75f - ((float)invaderPos.at(j+1) * 0.25f)), 0.25f, 0.25f);  // convert grid x,y pos to world x,y pos
         j += 2; // increment x,y pos index
       }
 
