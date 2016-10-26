@@ -179,9 +179,6 @@ namespace octet {
     // shader to draw a textured triangle
     texture_shader texture_shader_;
 
-    // level variables TEST for reading csv file
-    static int num_level_walls;
-
     enum {
       num_sound_sources = 8,
       num_rows = 15,  // max grid spaces vertically in enemy portion of game
@@ -229,7 +226,10 @@ namespace octet {
     // game state
     bool game_over;
     bool game_paused;
+    bool game_won;
     int score;
+    int currLevel = 1;
+    int MAXLEVEL = 2;
 
     // speed of enemy
     float invader_velocity;
@@ -272,6 +272,7 @@ namespace octet {
         invader_velocity *= 4;
       } else if (live_invaderers == 0) {
         game_over = true;
+        game_won = true;
         sprites[game_won_sprite].translate(-20, 0);
         sprites[game_restart_sprite].translate(-20, 0);
       }
@@ -501,7 +502,7 @@ namespace octet {
       // Return error if file can't be read/doesn't exist
       if (level.bad()) return 1; 
 
-      // Read file 
+      // Read file and fill arrays of specific sprites with x,y grid locations
       int posY = 0;
       while (!level.eof()) {
         // store line
@@ -539,35 +540,6 @@ namespace octet {
       nWalls = wallPos.size() / 2; 
       //printf("%d", nInvaders);
       return 0; // return no errors
-
-      // read through file and fill arrays of specific sprites with x,y grid locations
-      /*
-      for each line of csv (i = x, j = y)
-        if char == I
-          invaderPos.push_back(i)
-          invaderPos.push_back(j)
-        else if char == W
-          wallPos.push_back(i)
-          wallPos.push_back(j)
-        else if char == P
-          playerPos.push_back(i)
-          playerPos.push_back(j)
-        // new line, increment j, reset i = 0
-      */
-
-      // TMP values for testing invader position
-      //nInvaders = 5;
-      //nWalls = 4;
-      //invaderPos.push_back(12);
-      //invaderPos.push_back(0);
-      //invaderPos.push_back(13);
-      //invaderPos.push_back(0);
-      //invaderPos.push_back(14);
-      //invaderPos.push_back(0);
-      //invaderPos.push_back(12);
-      //invaderPos.push_back(1);
-      //invaderPos.push_back(2);
-      //invaderPos.push_back(5);
     }
 
     // move the array of enemies
@@ -632,6 +604,7 @@ namespace octet {
     }
 
     // this is called once OpenGL is initialized
+    //TODO: add int parameter for level, build string to load correct csv file, then at game end, add button input to move to next level
     void app_init() {
       // set up the shader
       texture_shader_.init();
@@ -646,7 +619,9 @@ namespace octet {
       std::vector<int> playerPos;
 
       // read in csv file to determine how number on location for each sprite type
-      read_csv("levels/Level1.csv", invaderPos, wallPos, playerPos);
+      std::string levelFile = "levels/Level" + std::to_string(currLevel) + ".csv";
+      //std::string levelFile = "levels/Level1.csv";
+      read_csv(levelFile.c_str(), invaderPos, wallPos, playerPos);
 
       font_texture = resource_dict::get_texture_handle(GL_RGBA, "assets/big_0.gif");
 
@@ -666,18 +641,8 @@ namespace octet {
       GLuint GamePause = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/GamePause.gif");
       sprites[game_pause_sprite].init(GamePause, 20, 0, 1.5f, 0.75f);
 
+      // Spawn and place enemies based off array of positions from csv
       GLuint invaderer = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/enemy.gif");
-      // original loop for creating enemies
-      //for (int j = 0; j != nRows; ++j) {
-      //  for (int i = 0; i != nCols; ++i) {
-      //    assert(first_invaderer_sprite + i + j*num_cols <= last_invaderer_sprite);
-      //    sprites[first_invaderer_sprite + i + j*num_cols].init(
-      //      invaderer, ((float)i - num_cols * 0.5f) * 0.25f, 2.75f - ((float)j * 0.25f), 0.25f, 0.25f
-      //    );	
-      //  }			
-      //}
-
-      // spawn and place enemies based off array of positions from csv
       int j = 0;  //index for x,y position
       for (int i = 0; i < nInvaders; ++i) {
         assert(first_invaderer_sprite + nInvaders <= last_invaderer_sprite);
@@ -686,7 +651,7 @@ namespace octet {
         j += 2; // increment x,y pos index
       }
 
-      // TODO: add walls where they were read in from csv file
+      // Add walls where they were read in from csv file
       GLuint wall = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/wall3.gif");
       j = 0;
       for (int i = 0; i != nWalls; ++i) {
@@ -736,6 +701,7 @@ namespace octet {
       live_invaderers = nInvaders;
       game_over = false;
       game_paused = false;
+      game_won = false;
       score = 0;
     }
 
@@ -744,6 +710,14 @@ namespace octet {
       if (game_over) {
         if (is_key_down(key_R)) {
           app_init();
+        }
+        if (game_won) {
+          if (is_key_down(key_N)) {
+            if (currLevel < MAXLEVEL) {
+              currLevel++;
+            }
+            app_init();
+          }
         }
         return;
       }
