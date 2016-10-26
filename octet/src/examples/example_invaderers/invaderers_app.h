@@ -189,7 +189,7 @@ namespace octet {
       num_bombs = 2,
       num_borders = 5,
       num_invaderers = num_rows * num_cols,
-      num_walls = 4,
+      num_walls = 10, // max walls per level
 
       // sprite definitions
       ship_sprite = 0,
@@ -234,6 +234,13 @@ namespace octet {
     float invader_velocity;
     // direction of enemy
     float invader_direction;
+
+
+    // level variables set by csv file
+    int nRows;
+    int nCols;
+    int nWalls;
+    int nInvaders;
 
     // sounds
     ALuint whoosh;
@@ -487,6 +494,15 @@ namespace octet {
       }
     }
 
+    void read_csv(const char* file) {
+      // read csv from given file name
+      // set values for number and position of sprites
+      nRows = 5;
+      nCols = 10;
+      nInvaders = 50;
+      nWalls = 3;
+    }
+
     // move the array of enemies
     void move_invaders(float dx, float dy) {
       for (int j = 0; j != num_invaderers; ++j) {
@@ -558,6 +574,7 @@ namespace octet {
       cameraToWorld.translate(0, 0, 3);
 
       // read in csv file to determine how number on location for each sprite type
+      read_csv("assets/levels/Invaders/Level1.csv");
 
       font_texture = resource_dict::get_texture_handle(GL_RGBA, "assets/big_0.gif");
 
@@ -577,8 +594,8 @@ namespace octet {
       sprites[game_pause_sprite].init(GamePause, 20, 0, 1.5f, 0.75f);
 
       GLuint invaderer = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/enemy.gif");
-      for (int j = 0; j != num_rows; ++j) {
-        for (int i = 0; i != num_cols; ++i) {
+      for (int j = 0; j != nRows; ++j) {
+        for (int i = 0; i != nCols; ++i) {
           assert(first_invaderer_sprite + i + j*num_cols <= last_invaderer_sprite);
           sprites[first_invaderer_sprite + i + j*num_cols].init(
             invaderer, ((float)i - num_cols * 0.5f) * 0.25f, 2.50f - ((float)j * 0.25f), 0.25f, 0.25f
@@ -588,7 +605,7 @@ namespace octet {
 
       // TODO: add walls where they were read in from csv file
       GLuint wall = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/wall3.gif");
-      for (int i = 0; i != num_walls; ++i) {
+      for (int i = 0; i != nWalls; ++i) {
         sprites[first_wall_sprite + i].init(wall, (-2.75f + i * 1.5f), -1.0f, 0.25f, 0.25f, 3);
       }
       //for (int i = 0; i != num_walls/2; ++i) {
@@ -632,7 +649,7 @@ namespace octet {
       bombs_disabled = 50;
       invader_velocity = 0.01f;
       invader_direction = -0.25f;
-      live_invaderers = num_invaderers;
+      live_invaderers = nInvaders;
       game_over = false;
       game_paused = false;
       score = 0;
@@ -649,14 +666,14 @@ namespace octet {
 
       // Pause and unpause game using 'P'
       if (!game_paused) {
-        if (is_key_going_down(kev_P)) {
+        if (is_key_going_down(key_P)) {
           game_paused = true;
           sprites[game_pause_sprite].translate(-20, 0);
           return;
         }
       }
       else {
-        if (is_key_going_down(kev_P)) {
+        if (is_key_going_down(key_P)) {
           game_paused = false;
           sprites[game_pause_sprite].translate(20, 0);
           goto move_ship;
