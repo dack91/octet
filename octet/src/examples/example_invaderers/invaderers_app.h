@@ -195,6 +195,7 @@ namespace octet {
       game_won_sprite,
       game_restart_sprite,
       game_pause_sprite,
+      game_nextLevel_sprite,
       background_sprite,
 
       first_invaderer_sprite,
@@ -229,7 +230,7 @@ namespace octet {
     bool game_won;
     int score;
     int currLevel = 1;
-    int MAXLEVEL = 2;
+    int MAXLEVEL = 3;
 
     // speed of enemy
     float invader_velocity;
@@ -275,6 +276,7 @@ namespace octet {
         game_won = true;
         sprites[game_won_sprite].translate(-20, 0);
         sprites[game_restart_sprite].translate(-20, 0);
+        sprites[game_nextLevel_sprite].translate(-20, 0);
       }
     }
 
@@ -620,7 +622,6 @@ namespace octet {
 
       // read in csv file to determine how number on location for each sprite type
       std::string levelFile = "levels/Level" + std::to_string(currLevel) + ".csv";
-      //std::string levelFile = "levels/Level1.csv";
       read_csv(levelFile.c_str(), invaderPos, wallPos, playerPos);
 
       font_texture = resource_dict::get_texture_handle(GL_RGBA, "assets/big_0.gif");
@@ -640,6 +641,9 @@ namespace octet {
 
       GLuint GamePause = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/GamePause.gif");
       sprites[game_pause_sprite].init(GamePause, 20, 0, 1.5f, 0.75f);
+
+      GLuint GameNextLevel = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/GameNextLevel.gif");
+      sprites[game_nextLevel_sprite].init(GameNextLevel, 20, -2.0f, 1.5f, 0.75f);
 
       // Spawn and place enemies based off array of positions from csv
       GLuint invaderer = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/enemy.gif");
@@ -756,7 +760,7 @@ namespace octet {
       sprite &borderTop = sprites[first_border_sprite + (invader_direction < 0 ? 4 : 1)]; // divider and top
       if (invaders_collide(borderSide)) {
         invader_velocity = -invader_velocity;
-        move_invaders(invader_velocity, invader_direction);  // changed from -0.1f to -0.25 to keep sprites in .25x.25 grid space
+        move_invaders(invader_velocity, invader_direction); 
         if (invaders_collide(borderTop)) {
           invader_direction = -invader_direction;
           move_invaders(invader_velocity, invader_direction); 
