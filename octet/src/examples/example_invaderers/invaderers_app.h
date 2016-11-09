@@ -16,6 +16,8 @@
 //   Texture loaded from GIF file
 //   Audio
 //
+// Modified Fall 2016 Delainey Ackerman
+// Intro to Programming - MA Computer Games Art and Design
 
 
 namespace octet {
@@ -70,7 +72,6 @@ namespace octet {
     }
     void life_lost() {
       --lives;
-
     }
 
     // update sprite texture with new image
@@ -132,12 +133,6 @@ namespace octet {
     void translate(float x, float y) {
       modelToWorld.translate(x, y, 0);
     }
-
-    // rotate the object
-    //TODO:fix rotation eventually stops firing ability
-    //void rotate(float angle) {
-    //  modelToWorld.rotate(angle, 0, 0, 1);
-    //}
 
     // position the object relative to another.
     void set_relative(sprite &rhs, float x, float y) {
@@ -283,6 +278,13 @@ namespace octet {
       }
     }
 
+    // change player sprite color when life lost
+    void on_life_lost() {
+        livesLeftColor[0] = 1.0f;
+        livesLeftColor[1] = livesLeftColor[1] - 0.33f;
+        livesLeftColor[2] = 0.0f;
+    }
+
     // called when we are hit
     void on_hit_ship(sprite &player) {
       ALuint source = get_sound_source();
@@ -290,15 +292,10 @@ namespace octet {
       alSourcePlay(source);
 
       player.life_lost();
+      on_life_lost();
+
       int playerLives = player.get_lives_left();
-      if (playerLives == 2) {
-        livesLeftColor[1] = 0.5f;
-        livesLeftColor[2] = 0.0f;
-      }
-      else if (playerLives == 1) {
-        livesLeftColor[1] = 0.0f;
-      }
-      else if (playerLives == 0) {
+      if (playerLives == 0) {
         game_over = true;
         sprites[game_over_sprite].translate(-20, 0);
         sprites[game_restart_sprite].translate(-20, 0);
@@ -365,11 +362,6 @@ namespace octet {
           sprites[ship_sprite].translate(0, +ship_speed);
         }
       }
-      //rotate the ship //TODO:fix rotation eventually stops firing
-      //if (is_key_down(key_shift)) {
-      //  sprites[ship_sprite].rotate(10);
-      //}
-
     }
 
     // fire button (space)
@@ -393,7 +385,6 @@ namespace octet {
     }
 
     // pick and invader and fire a bomb
-    //TODO: intelligently pick invader to fire
     void fire_bombs() {
       if (bombs_disabled) {
         --bombs_disabled;
@@ -505,10 +496,10 @@ namespace octet {
       }
     }
 
-    // read csv from given file name
-    // set values for number and position of sprites
+    // Read csv from given file name
+    // Set values for number and position of sprites
     int read_csv(const char* file, std::vector<int> &invaderPos, std::vector<int> &wallPos, std::vector<int> &playerPos) {
-      //EXAMPLE READ CSV FROM ANDY THOMASON GITHUB https://github.com/andy-thomason/read_a_csv_file/blob/master/main.cpp
+      //EXAMPLE "READ CSV" FROM ANDY THOMASON GITHUB https://github.com/andy-thomason/read_a_csv_file/blob/master/main.cpp
       std::ifstream level(file);
 
       // Return error if file can't be read/doesn't exist
@@ -615,10 +606,10 @@ namespace octet {
     }
 
     // this is called once OpenGL is initialized
-    //TODO: add int parameter for level, build string to load correct csv file, then at game end, add button input to move to next level
     void app_init() {
       // set up the shader
       texture_shader_.init();
+      // reset the player shader
       for (int i = 0; i < 4; i++) {
         livesLeftColor[i] = 1.0f;
       }
@@ -678,7 +669,7 @@ namespace octet {
       }
 
       // set the border to white for clarity
-      GLuint white = resource_dict::get_texture_handle(GL_RGB, "#042151");  //default white #ffffff
+      GLuint white = resource_dict::get_texture_handle(GL_RGB, "#3a1c03");  //default white #ffffff
       sprites[first_border_sprite+0].init(white, 0, -3, 6, 0.25f);  // bottom
       sprites[first_border_sprite+1].init(white, 0,  3, 6, 0.25f);  // top
       sprites[first_border_sprite+2].init(white, -3, 0, 0.25f, 6);  // left
@@ -788,15 +779,8 @@ namespace octet {
       glViewport(x, y, w, h);
 
       // clear the background to black
-      glClearColor(0.55f, 0.27f, 0.07f, 1); // teal (0.08f, 0.37f, 0.83f, 1) //default black 0,0,0,1
+      glClearColor(0.086f, 0.247f, 0.019f, 1.0f); //default black 0,0,0,1
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-      //TODO: load background texture instead of clearColor
-      //GLuint background = resource_dict::get_texture_handle(GL_RGBA, "assets/invaderers/background.gif");
-      ////sprites[background_sprite].init(background, 0, 0, 5.8f, 5.8f);
-      //glBindTexture(GL_TEXTURE_2D, background);
-      //glLoadIdentity();
-      //glEnable(GL_TEXTURE_2D);
 
       // don't allow Z buffer depth testing (closer objects are always drawn in front of far ones)
       glDisable(GL_DEPTH_TEST);
