@@ -70,6 +70,7 @@ namespace octet {
     }
     void life_lost() {
       --lives;
+
     }
 
     // update sprite texture with new image
@@ -77,7 +78,7 @@ namespace octet {
       texture = _texture;
     }
 
-    void render(texture_shader &shader, mat4t &cameraToWorld) {
+    void render(texture_shader &shader, mat4t &cameraToWorld, float color[]) {
       // invisible sprite... used for gameplay.
       if (!texture) return;
 
@@ -92,7 +93,7 @@ namespace octet {
       // use "old skool" rendering
       //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
       //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-      shader.render(modelToProjection, 0);
+      shader.render(modelToProjection, 0, color);
 
       // this is an array of the positions of the corners of the sprite in 3D
       // a straight "float" here means this array is being generated here at runtime.
@@ -231,6 +232,8 @@ namespace octet {
     int score;
     int currLevel = 1;
     int MAXLEVEL = 3;
+    float livesLeftColor[4];
+    float defaultColor[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 
     // speed of enemy
     float invader_velocity;
@@ -288,7 +291,14 @@ namespace octet {
 
       player.life_lost();
       int playerLives = player.get_lives_left();
-      if (playerLives == 0) {
+      if (playerLives == 2) {
+        livesLeftColor[1] = 0.5f;
+        livesLeftColor[2] = 0.0f;
+      }
+      else if (playerLives == 1) {
+        livesLeftColor[1] = 0.0f;
+      }
+      else if (playerLives == 0) {
         game_over = true;
         sprites[game_over_sprite].translate(-20, 0);
         sprites[game_restart_sprite].translate(-20, 0);
@@ -370,7 +380,7 @@ namespace octet {
         // find a missile
         for (int i = 0; i != num_missiles; ++i) {
           if (!sprites[first_missile_sprite+i].is_enabled()) {
-            sprites[first_missile_sprite+i].set_relative(sprites[ship_sprite], 0, 0.5f);
+            sprites[first_missile_sprite+i].set_relative(sprites[ship_sprite], 0, 0.15f); // initialize missile closer to ship so it can't shoot through walls
             sprites[first_missile_sprite+i].is_enabled() = true;
             missiles_disabled = 5;
             ALuint source = get_sound_source();
@@ -396,7 +406,7 @@ namespace octet {
             // find a bomb
             for (int i = 0; i != num_bombs; ++i) {
               if (!sprites[first_bomb_sprite+i].is_enabled()) {
-                sprites[first_bomb_sprite+i].set_relative(invaderer, 0, -0.25f);
+                sprites[first_bomb_sprite+i].set_relative(invaderer, 0, -0.15f);
                 sprites[first_bomb_sprite+i].is_enabled() = true;
                 bombs_disabled = 30;
                 ALuint source = get_sound_source();
@@ -511,6 +521,7 @@ namespace octet {
         char buffer[100];
         level.getline(buffer, sizeof(buffer));
 
+        // step through line
         char *b = buffer;
         for (int posX = 0; posX < sizeof(buffer); ++posX) {
           if (*b != 0 && *b != ',') {
@@ -537,10 +548,8 @@ namespace octet {
         ++posY; //next line     
       }
       
-      //read first line of csv
       nInvaders = invaderPos.size() / 2;  
       nWalls = wallPos.size() / 2; 
-      //printf("%d", nInvaders);
       return 0; // return no errors
     }
 
@@ -589,7 +598,7 @@ namespace octet {
       glActiveTexture(GL_TEXTURE0);
       glBindTexture(GL_TEXTURE_2D, font_texture);
 
-      shader.render(modelToProjection, 0);
+      shader.render(modelToProjection, 0, defaultColor);
 
       glVertexAttribPointer(attribute_pos, 3, GL_FLOAT, GL_FALSE, sizeof(bitmap_font::vertex), (void*)&vertices[0].x );
       glEnableVertexAttribArray(attribute_pos);
@@ -610,6 +619,9 @@ namespace octet {
     void app_init() {
       // set up the shader
       texture_shader_.init();
+      for (int i = 0; i < 4; i++) {
+        livesLeftColor[i] = 1.0f;
+      }
 
       // set up the matrices with a camera 5 units from the origin
       cameraToWorld.loadIdentity();
@@ -793,9 +805,12 @@ namespace octet {
       glEnable(GL_BLEND);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+
+      // draw ship sprite with color tinted to mach number of lives left
+      sprites[0].render(texture_shader_, cameraToWorld, livesLeftColor);
       // draw all the sprites
-      for (int i = 0; i != num_sprites; ++i) {
-        sprites[i].render(texture_shader_, cameraToWorld);
+      for (int i = 1; i != num_sprites; ++i) {
+        sprites[i].render(texture_shader_, cameraToWorld, defaultColor);
       }
 
       char score_text[32];

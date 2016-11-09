@@ -5,13 +5,15 @@
 // Modular Framework for OpenGLES2 rendering on multiple platforms.
 //
 // Single texture shader with no lighting
+#include <vector>
 
 namespace octet { namespace shaders {
   class texture_shader : public shader {
     // indices to use with glUniform*()
 
     // index for model space to projection space matrix
-    GLuint modelToProjectionIndex_;
+    GLuint modelToProjectionIndex_; 
+    GLuint colorIndex;
 
     // index for texture sampler
     GLuint samplerIndex_;
@@ -39,7 +41,10 @@ namespace octet { namespace shaders {
       const char fragment_shader[] = SHADER_STR(
         varying vec2 uv_;
         uniform sampler2D sampler;
-        void main() { gl_FragColor = texture2D(sampler, uv_); }
+        uniform vec4 tintSpriteColor;
+        void main() {
+          gl_FragColor = texture2D(sampler, uv_) * tintSpriteColor; // multiply shader by vec4 to tint color of rendered sprite based on game state
+        }
       );
     
       // use the common shader code to compile and link the shaders
@@ -49,15 +54,18 @@ namespace octet { namespace shaders {
       // extract the indices of the uniforms to use later
       modelToProjectionIndex_ = glGetUniformLocation(program(), "modelToProjection");
       samplerIndex_ = glGetUniformLocation(program(), "sampler");
+      colorIndex = glGetUniformLocation(program(), "tintSpriteColor");
     }
 
-    void render(const mat4t &modelToProjection, int sampler) {
+    void render(const mat4t &modelToProjection, int sampler, float color[]) {
       // tell openGL to use the program
       shader::render();
 
       // customize the program with uniforms
       glUniform1i(samplerIndex_, sampler);
       glUniformMatrix4fv(modelToProjectionIndex_, 1, GL_FALSE, modelToProjection.get());
+      glUniform4fv(colorIndex, 1, color); // set up uniform for tinting individual sprite colors
     }
+    
   };
 }}
