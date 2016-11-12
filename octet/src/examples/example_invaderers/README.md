@@ -129,7 +129,7 @@ Take cover behind walls, but look out! They don't last forever.
   }
   ```
 * Uniform Shader: tint color of player texture based on number of lives left
-  * I modified the [texture_shader.h] (https://github.com/dack91/octet/blob/master/octet/src/shaders/texture_shader.h) file to be able to tint the color of any texture based on a parameter contianing an array of floats representing the R,G,B and Alpha values by which to change the normal applied texture. I did this so that the appearance of the player character can visually change colors after each life lost without loading in a different texture to the player sprite. I added the float array parameter to the *render()* function in *texture_shader.h* from which the values of that array are used to set up a *uniform vec4*. The *vec4* can then be used to tint the applied texture by multiplying it the normal 2D texture created for the *gl_FragColor* used to color the sprite. 
+  * I modified the [texture_shader.h] (https://github.com/dack91/octet/blob/master/octet/src/shaders/texture_shader.h) file to be able to tint the color of any texture based on a parameter containing an array of floats representing the R,G,B and Alpha values by which to change the normal applied texture. I did this so that the appearance of the player character can visually change colors after each life lost without loading in a different texture to the player sprite. I added the float array parameter to the *render()* function in *texture_shader.h* from which the values of that array are used to set up a *uniform vec4*. The *vec4* can then be used to tint the applied texture by multiplying it by the normal 2D texture created for the *gl_FragColor* used to color the sprite. 
   ```cpp
   void render(const mat4t &modelToProjection, int sampler, float color[]) {
     ...
@@ -137,10 +137,11 @@ Take cover behind walls, but look out! They don't last forever.
     ...
     glUniform4fv(colorIndex, 1, color); // set up uniform for tinting individual sprite colors
   }
-  
+  ...
   // extract the indices of the uniforms to use later
   colorIndex = glGetUniformLocation(program(), "tintSpriteColor");
-  
+  ...
+  uniform vec4 tintSpriteColor;
   void main() {
     // multiply shader by vec4 to tint color of rendered sprite based on game state
     gl_FragColor = texture2D(sampler, uv_) * tintSpriteColor; 
