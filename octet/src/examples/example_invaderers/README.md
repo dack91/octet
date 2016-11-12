@@ -11,8 +11,8 @@ Take cover behind walls, but look out! They don't last forever.
 
 ######Major Additions:
 * Define Player and Enemy Playing Spaces
-  * I used a fifth, invisible border sprite as a divider between player and invader game areas. The invaders can move in roughly the upper two thirds of the game window. Once the lowermost invader reaches the dividing border, all invaders begin to move back upscreen. After the top most invader reaches the top border all invaders will switch to once again move downscreen towards the player.
-  * This is implemented similarly to the invader velocity determining if the invaders are moving left to right (positive) direction across the screen, or right to left (negative) direction. In *simulate()* I perform a check after moving the invaders to see if any invader sprite collided with the top or dividing border in addition to the exisisting check to determine if the invaders hit a left or right border and need to change direction. 
+  * I used a fifth, invisible border sprite as a divider between player and invader game areas. The invaders can move in roughly the upper two thirds of the game window. Once the lowermost invader reaches the dividing border, all invaders begin to move back up screen. After the top most invader reaches the top border all invaders will switch to once again move down screen towards the player.
+  * This is implemented similarly to the invader velocity determining if the invaders are moving left to right (positive) direction across the screen, or right to left (negative) direction. In *simulate()* I perform a check after moving the invaders to see if any invader sprite collided with the top or dividing border in addition to the existing check to determine if the invaders hit a left or right border and need to change direction. 
   ``` cpp
   float invader_direction;
   ...
@@ -36,7 +36,7 @@ Take cover behind walls, but look out! They don't last forever.
   * ![wall2](../../../assets/invaderers/wall2.gif)
   * Wall with 1 damage hit left
   * ![wall1](../../../assets/invaderers/wall1.gif)
-  * I implemented a second constructor to the *Sprite* class to allow sprites to have multiple lives. The original constructor was changed to default the number of lives to 1. With this implimentation any sprite could be initialized with multiple lives (or damage hit points) which would be useful in extending this code to include boss level enemies or additional strong and weak cover sprites. I added simple getter and setter functions so that life counter is a private member variable and the upkeep of each sprite's lives is not directly changed by any outside class. I also switched the player (or ship) sprite over to use this second constructor to eleminate the use of one of the sundry game counters initialized in *app_init()* to track the number of player lives left used to determine the overal game state.  
+  * I implemented a second constructor to the *Sprite* class to allow sprites to have multiple lives. The original constructor was changed to default the number of lives to 1. With this implementation any sprite could be initialized with multiple lives (or damage hit points) which would be useful in extending this code to include boss level enemies or additional strong and weak cover sprites. I added simple getter and setter functions so that life counter is a private member variable and the upkeep of each sprite's lives is not directly changed by any outside class. I also switched the player (or ship) sprite over to use this second constructor to eliminate the use of one of the sundry game counters initialized in *app_init()* to track the number of player lives left used to determine the overall game state.  
   ``` cpp
   // Second constructor used for player, walls, and other sprites with multiple lives
   void init(int _texture, float x, float y, float w, float h, int life) {
@@ -89,7 +89,7 @@ Take cover behind walls, but look out! They don't last forever.
     return;
   }
   ```
-  * Next I added the ability to pause and unpause the game. This also occurs in *simulate()* as the game needs to listen every frame to see if the 'P' key was pressed. In this case I used the *is_key_going_down()* function to check for key presses so that action of pausing or unpausing only occurs once per key press even if the key is pressed down for multiple frames. 
+  * Next I added the ability to pause and un-pause the game. This also occurs in *simulate()* as the game needs to listen every frame to see if the 'P' key was pressed. In this case I used the *is_key_going_down()* function to check for key presses so that action of pausing or unpausing only occurs once per key press even if the key is pressed down for multiple frames. 
   ```cpp
   // Pause and unpause game using 'P'
   if (!game_paused) {
@@ -156,7 +156,7 @@ Take cover behind walls, but look out! They don't last forever.
 
 ######Minor Modifications:
 * Add Additional Key Press Functionality
-  * I modified [app_common.h] (https://github.com/dack91/octet/blob/master/octet/src/platform/app_common.h) by adding more ascii keys to the key enumerator used to navigate game states like Pause, Restart, and Next Level.
+  * I modified [app_common.h] (https://github.com/dack91/octet/blob/master/octet/src/platform/app_common.h) by adding more asci keys to the key enumerator used to navigate game states like Pause, Restart, and Next Level.
   ```cpp
   enum key {
     ...
@@ -170,7 +170,7 @@ Take cover behind walls, but look out! They don't last forever.
    ```
   
 * Vertical Player Movement
-  * I added up and down movement to the *move_ship()* class by checking for up and down key presses and ensuring that the player remains within the game play area by checking for collisions with the bottom and divider border sprites. If the player moves to collide with one of those boundaries, apply an equal and oppisite movement so that the sprite stays in one place inside of the allowed area.
+  * I added up and down movement to the *move_ship()* class by checking for up and down key presses and ensuring that the player remains within the game play area by checking for collisions with the bottom and divider border sprites. If the player moves to collide with one of those boundaries, apply an equal and opposite movement so that the sprite stays in one place inside of the allowed area.
   ```cpp
   // up arrow
   else if (is_key_down(key_up)) {
@@ -181,9 +181,9 @@ Take cover behind walls, but look out! They don't last forever.
   }
   ```  
 * Self Defense: Destroy bombs with missiles
-  * I modified *move_missiles()* to iterate through bomb sprites and check for colisions in addition to the  
-  existing checks if the missile collided with any active invader sprites or any of the damagable walls  
-  implemented and described earlier. This modification finilizes the three methods the player can use to  
+  * I modified *move_missiles()* to iterate through bomb sprites and check for collisions in addition to the  
+  existing checks if the missile collided with any active invader sprites or any of the damageable walls  
+  implemented and described earlier. This modification finalizes the three methods the player can use to  
   avoid being hit by invader bombs: take cover behind temporary walls, dodge the attack with four directional  
   movement, and shoot a missile at the bomb to destroy both projectiles.
   * I also initiated bombs closer to the player in order to fix bug which allowed a player to hide underneath    
