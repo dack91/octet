@@ -6,14 +6,15 @@
 #####[Link for demo video] (https://youtu.be/ejbD38uXy2k)
 
 ######Game Description:
-Fight your way through multiple levels, defending your territory from the monstrous Link Invaders.
+Fight your way through multiple levels, defending your territory from the copycat Link Invaders.  
+Take cover behind walls, but look out! They don't last forever. 
 
 ######Major Additions:
 * Define Player and Enemy Playing Spaces
-  * I used a fifth, invisible wall as a border between player and invader game areas. The invaders can move in  
-  the upper two thirds of the game window; once the lowermost invader reaches the dividing border, all  
-  invaders begin to move back upscreen. After the top most invader reaches the top border all invaders will  
-  switch to once again move downscreen towards the player.
+  * I used a fifth, invisible wall as a border sprite between player and invader game areas. The invaders can   
+  move in the upper two thirds of the game window; once the lowermost invader reaches the dividing border,    
+  all invaders begin to move back upscreen. After the top most invader reaches the top border all invaders   
+  will switch to once again move downscreen towards the player.
  
 *  Add Wall Sprites That Take Multiple Damage Hits Before Destruction
   * adapt the sprite class to track number of lives, switch out textures
@@ -28,7 +29,7 @@ Fight your way through multiple levels, defending your territory from the monstr
 * Uniform Shader: tint color of player texture based on number of lives left
 
 ######Minor Modifications:
-* Add Additional Keys Functionality
+* Add Additional Key Press Functionality
   * Modify [app_common.h] (https://github.com/dack91/octet/blob/master/octet/src/platform/app_common.h) by adding more ascii 
   keys used to navigate game states like Pause, Restart, and Next Level.
   
