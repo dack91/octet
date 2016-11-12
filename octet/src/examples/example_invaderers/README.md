@@ -16,6 +16,8 @@ Movement on y axis
 TMP MD how to's:
 **inline code** 
 I think you should use an
+`std::string wallTextureFile = "assets/invaderers/wall" +  std::to_string(--currLives) + ".gif";`
+or an
 `      // Damage wall
       if (currLives > 1) {
         wall.life_lost();
@@ -25,5 +27,5 @@ I think you should use an
         wall.change_texture(newTexture);
       }` element here instead.
 **image** 
-![GitHub Logo](/images/logo.png)
-Format: ![Alt Text](url)
+![GitHub Logo](../../../assets/invaderers/wall1.gif)
+
