@@ -1,9 +1,9 @@
 Delainey Ackerman
 Intro to Game Programming
 Assignment 1: Basic 2D game mod from example_invaders
-October 2016
+November 2016
 
-Link for demo video:
+[Link for demo video] (https://youtu.be/ejbD38uXy2k)
 __
 
 Game Description:
