@@ -315,7 +315,7 @@ namespace octet {
       if (currLives > 1) {
         wall.life_lost();
         std::string wallTextureFile = "assets/invaderers/wall" +  std::to_string(--currLives) + ".gif";
-        // example std::string from stackOverflow http://stackoverflow.com/questions/13108973/creating-file-names-automatically-c
+        // example std::string from stackOverflow goo.gl/6ntDg2
         newTexture = resource_dict::get_texture_handle(GL_RGBA, wallTextureFile.c_str());
         wall.change_texture(newTexture);
       }
@@ -372,7 +372,8 @@ namespace octet {
         // find a missile
         for (int i = 0; i != num_missiles; ++i) {
           if (!sprites[first_missile_sprite+i].is_enabled()) {
-            sprites[first_missile_sprite+i].set_relative(sprites[ship_sprite], 0, 0.15f); // initialize missile closer to ship so it can't shoot through walls
+            // Initialize missile closer to ship so it can't shoot through walls
+            sprites[first_missile_sprite+i].set_relative(sprites[ship_sprite], 0, 0.15f); 
             sprites[first_missile_sprite+i].is_enabled() = true;
             missiles_disabled = 5;
             ALuint source = get_sound_source();
