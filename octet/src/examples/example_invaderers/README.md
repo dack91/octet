@@ -3,7 +3,7 @@
 ####Assignment 1: Basic 2D game mod from example_invaders
 ####November 2016
 
-#####[Link for demo video] (https://youtu.be/ejbD38uXy2k)
+#####[Link for demo video] (https://youtu.be/rC4hNVdcCu8)
 
 ######Game Description:
 Fight your way through multiple levels, defending your territory from the copycat Link Invaders.  
